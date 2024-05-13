@@ -12,6 +12,7 @@ const handler = createWebhooksHandler({
       return
     }
 
+    // Create a payment method from the card token
     const pm = await stripe.paymentMethods.create({
       type: 'card',
       card: {
@@ -19,6 +20,7 @@ const handler = createWebhooksHandler({
       }
     })
 
+    // Create a customer record in Stripe
     const customer = await stripe.customers.create({
       email: 'brian@brianmorrison.me',
       payment_method: pm.id,

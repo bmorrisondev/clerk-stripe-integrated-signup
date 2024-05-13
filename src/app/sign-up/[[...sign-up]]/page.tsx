@@ -7,16 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Icons } from '@/components/ui/icons';
-import Link from 'next/link';
 import { useState } from 'react';
-import SignUpForm from './SignUpForm2';
+import SignUpForm from './SignUpForm';
 import { loadStripe } from '@stripe/stripe-js';
-import { AddressElement, CardElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 
 export default function Page() {
   const { isLoaded, signUp, setActive } = useSignUp();
-  const [isLoading, setIsLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [code, setCode] = useState('');
   const router = useRouter();
@@ -28,9 +25,8 @@ export default function Page() {
 
   const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
-
+  // Handles the sign-up process, including storing the card token and price id into the users metadata
   async function handleSubmit(email: string, cardToken: string, priceId: string) {
-
     if (!isLoaded && !signUp) return null;
 
     try {
@@ -56,9 +52,9 @@ export default function Page() {
     }
   }
 
+  // Handles the verification process once the user has entered the validation code from email
   async function handleVerification(e: React.FormEvent) {
     e.preventDefault();
-    // setError('');
 
     if (!isLoaded && !signUp) return null;
 
@@ -86,9 +82,10 @@ export default function Page() {
     }
   }
 
+  // Renders the form showing
   if (verifying) {
     return (
-      <>
+      <div className='flex items-center justify-center mt-20'>
         <form onSubmit={handleVerification}>
           <Card className="w-full sm:w-96">
           <CardHeader>
@@ -115,16 +112,17 @@ export default function Page() {
             </div>
           </CardFooter>
         </Card>
-
         </form>
-      </>
+      </div>
     );
   }
 
   return (
-    // @ts-ignore
-    <Elements options={options} stripe={stripePromise}>
-      <SignUpForm onSubmit={handleSubmit} />
-    </Elements>
+    <div className='flex items-center justify-center mt-20'>
+      {/* @ts-ignore */}
+      <Elements options={options} stripe={stripePromise}>
+        <SignUpForm onSubmit={handleSubmit} />
+      </Elements>
+    </div>
   );
 }

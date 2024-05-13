@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Clerk x Stripe Integrated Form Demo
 
-## Getting Started
+This demo shows how to create a fully custom form that integrates creating a Clerk user (using email OTP), select a subscription tier, and collect credit card information.
 
-First, run the development server:
+## How it works
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This is built using [Custom Flows](https://clerk.com/docs/custom-flows/overview), [Stripe Elements](https://stripe.com/payments/elements), and Webhooks. The flow is as follows:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+![](./flow.png)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. User hits submit and card is tokenized
+2. Tokenized card data and price ID saved in unsafe metadata, Clerk validation begins
+3. Clerk sends email with otp
+4. User validates OTP
+5. User is created
+6. Webhook sent to Next app with user.created, incl unsafe metadata
+7. Handler creates payment method, customer, and subscription
+8. Customer is subscribed to product
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Notable pages:
 
-## Learn More
+- `src/app/sign-up` - Contains sign up & validation pages.
+- `src/app/after-sign-up` - This is where the user is redirected after signup. The page waits for the `stripeSubscriptionId` value, indicating that onboarding was successful.
+- `src/api/clerkhooks` - The file that defines the webhook handlers to create a payment method, customer record, and subscription in Stripe.
 
-To learn more about Next.js, take a look at the following resources:
+## What is NOT covered in this demo
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Input validation and general error handling is not complete in this demo. Please be sure to properly handle those before using this in production.

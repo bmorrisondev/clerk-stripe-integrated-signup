@@ -20,11 +20,10 @@ function SignUpForm({ onSubmit }: Props) {
   const { isLoaded } = useSignUp();
   const stripe = useStripe();
   const elements = useElements();
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('')
   const [email, setEmail] = useState('')
 
-  // tokenize the thing and store it with the user account
+  // Tokenize the card before passing the email, token, and selected product ID up to the parent comp
   async function _onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if(!elements || !stripe) {
@@ -47,6 +46,8 @@ function SignUpForm({ onSubmit }: Props) {
           <CardDescription>Welcome! Please fill in the details to get started.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-y-4">
+
+          {/* Email input */}
           <div>
             <Label htmlFor="emailAddress">Email address</Label>
             <Input
@@ -57,6 +58,8 @@ function SignUpForm({ onSubmit }: Props) {
               name="emailAddress"
               required />
           </div>
+
+          {/* Product selection radio group */}
           <div>
             <RadioGroup defaultValue="option-one"
               value={selectedProduct} onValueChange={e => setSelectedProduct(e)}>
@@ -71,6 +74,7 @@ function SignUpForm({ onSubmit }: Props) {
             </RadioGroup>
           </div>
 
+          {/* Use Stripe Elements to render the card capture form */}
           <CardElement />
 
         </CardContent>
@@ -78,7 +82,7 @@ function SignUpForm({ onSubmit }: Props) {
         <CardFooter>
           <div className="grid w-full gap-y-4">
             <Button type="submit" disabled={!isLoaded}>
-              {isLoading ? <Icons.spinner className="size-4 animate-spin" /> : 'Sign up for trial'}
+              Sign up for trial
             </Button>
             <Button variant="link" size="sm" asChild>
               <Link href="/sign-in">Already have an account? Sign in</Link>
