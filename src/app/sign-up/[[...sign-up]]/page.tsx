@@ -21,7 +21,6 @@ export default function Page() {
   const [code, setCode] = useState('');
   const router = useRouter();
   const options = {
-    // clientSecret,
     appearance: {
       theme: 'stripe'
     },
@@ -74,7 +73,7 @@ export default function Page() {
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
 
-        router.push('/');
+        router.push('/after-sign-up');
       } else {
         // If the status is not complete, check why. User may need to
         // complete further steps.
