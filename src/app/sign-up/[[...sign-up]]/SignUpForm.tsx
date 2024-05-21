@@ -61,7 +61,8 @@ function SignUpForm({ onSubmit }: Props) {
 
           {/* Product selection radio group */}
           <div>
-            <RadioGroup defaultValue="option-one"
+            <Label>Select tier</Label>
+            <RadioGroup defaultValue="option-one" className='mt-2'
               value={selectedProduct} onValueChange={e => setSelectedProduct(e)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="price_1PG1OcF35z7flJq7p803vcEP" id="option-one" />
@@ -75,7 +76,11 @@ function SignUpForm({ onSubmit }: Props) {
           </div>
 
           {/* Use Stripe Elements to render the card capture form */}
-          <CardElement />
+            <Label>Payment details</Label>
+          <div className='border rounded p-2'>
+
+            <CardElement />
+          </div>
 
         </CardContent>
 
