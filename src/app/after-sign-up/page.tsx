@@ -15,13 +15,14 @@ function AfterSignUp() {
   const router = useRouter();
   const { user } = useUser()
 
-  // Wait for the user to have a stripe subscription id
+  // 👉 Poll the user data until a stripeSubscriptionId is available
   useEffect(() => {
     async function init() {
       while(!user?.publicMetadata?.stripeSubscriptionId) {
         await sleep(2000)
         await user?.reload()
       }
+      // 👉 Once available, redirect to /dashboard
       router.push('/dashboard')
     }
     init()

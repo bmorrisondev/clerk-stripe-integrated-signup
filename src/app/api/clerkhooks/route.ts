@@ -8,11 +8,10 @@ const handler = createWebhooksHandler({
   onUserCreated: async (user) => {
     const { cardToken, priceId } = user.unsafe_metadata
     if(!cardToken || !priceId) {
-      // TODO: Throw and handle error
       return
     }
 
-    // Create a payment method from the card token
+    // 👉 Create a payment method from the card token
     const pm = await stripe.paymentMethods.create({
       type: 'card',
       card: {
@@ -20,13 +19,13 @@ const handler = createWebhooksHandler({
       }
     })
 
-    // Create a customer record in Stripe
+    // 👉 Create a customer record in Stripe
     const customer = await stripe.customers.create({
       email: 'brian@brianmorrison.me',
       payment_method: pm.id,
     });
 
-    // Create subscription
+    // 👉 Create subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       default_payment_method: pm.id,
@@ -38,19 +37,13 @@ const handler = createWebhooksHandler({
       ],
     });
 
-    // Update user metadata
+    // 👉 Update user metadata
     await clerkClient.users.updateUser(user.id, {
       publicMetadata: {
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id
       }
     })
-  },
-  onUserUpdated: async (user) => {
-    console.log("User updated", user)
-  },
-  onUserDeleted: async (user) => {
-    console.log("User deleted", user)
   }
 })
 

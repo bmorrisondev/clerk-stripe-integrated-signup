@@ -1,45 +1,61 @@
 'use client';
-import * as Clerk from '@clerk/elements/common';
-import * as SignUp from '@clerk/elements/sign-up';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Icons } from '@/components/ui/icons';
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { useSignUp } from '@clerk/nextjs';
 import { useState } from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 type Props = {
-  onSubmit: (email: string, cardToken: string, priceId: string) => void;
+  setVerifying: (val: boolean) => void
 }
 
-function SignUpForm({ onSubmit }: Props) {
-  const { isLoaded } = useSignUp();
+function SignUpForm({ setVerifying }: Props) {
+  const { isLoaded, signUp } = useSignUp();
   const stripe = useStripe();
   const elements = useElements();
-  const [selectedProduct, setSelectedProduct] = useState('')
+  const [priceId, setPriceId] = useState('')
   const [email, setEmail] = useState('')
 
-  // Tokenize the card before passing the email, token, and selected product ID up to the parent comp
-  async function _onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if(!elements || !stripe) {
-      return
-    }
+  // 👉 Handles the sign-up process, including storing the card token and price id into the users metadata
+  async function onSubmit() {
+    if (!isLoaded && !signUp) return null;
 
-    const cardEl = elements?.getElement("card")
-    if(cardEl) {
-      const res = await stripe?.createToken(cardEl)
-      console.log(res)
-      onSubmit(email, res?.token?.id || '', selectedProduct)
+    try {
+      if(!elements || !stripe) {
+        return
+      }
+
+      let cardToken = ''
+      const cardEl = elements?.getElement("card")
+      if(cardEl) {
+        const res = await stripe?.createToken(cardEl)
+        cardToken = res?.token?.id || ''
+      }
+
+      await signUp.create({
+        emailAddress: email,
+        unsafeMetadata: {
+          cardToken,
+          priceId
+        }
+      });
+
+      // 👉 Start the verification - an email will be sent with an OTP code
+      await signUp.prepareEmailAddressVerification();
+
+      // 👉 Set verifying to true to display second form and capture the OTP code
+      setVerifying(true);
+    } catch (err) {
+      // 👉 Something went wrong...
     }
   }
 
   return (
-    <form onSubmit={_onSubmit}>
+    <form onSubmit={onSubmit}>
       <Card className="w-full sm:w-96">
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
@@ -47,7 +63,7 @@ function SignUpForm({ onSubmit }: Props) {
         </CardHeader>
         <CardContent className="grid gap-y-4">
 
-          {/* Email input */}
+          {/* // 👉  Email input */}
           <div>
             <Label htmlFor="emailAddress">Email address</Label>
             <Input
@@ -59,11 +75,11 @@ function SignUpForm({ onSubmit }: Props) {
               required />
           </div>
 
-          {/* Product selection radio group */}
+          {/* // 👉 Product selection radio group */}
           <div>
             <Label>Select tier</Label>
             <RadioGroup defaultValue="option-one" className='mt-2'
-              value={selectedProduct} onValueChange={e => setSelectedProduct(e)}>
+              value={priceId} onValueChange={e => setPriceId(e)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="price_1PG1OcF35z7flJq7p803vcEP" id="option-one" />
                 <Label htmlFor="option-one">Pro</Label>
@@ -75,10 +91,9 @@ function SignUpForm({ onSubmit }: Props) {
             </RadioGroup>
           </div>
 
-          {/* Use Stripe Elements to render the card capture form */}
-            <Label>Payment details</Label>
+          {/* // 👉 Use Stripe Elements to render the card capture form */}
+          <Label>Payment details</Label>
           <div className='border rounded p-2'>
-
             <CardElement />
           </div>
 
