@@ -21,7 +21,7 @@ const handler = createWebhooksHandler({
 
     // 👉 Create a customer record in Stripe
     const customer = await stripe.customers.create({
-      email: 'brian@brianmorrison.me',
+      email: user?.email_addresses[0].email_address,
       payment_method: pm.id,
     });
 
